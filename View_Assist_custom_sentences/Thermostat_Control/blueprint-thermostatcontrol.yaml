@@ -9,7 +9,7 @@ blueprint:
       default: en
       selector:
         language:
-          languages: [en]
+          languages: [en, uk]
     increasetemperature:
       name: Increase Temperature
       description: The phrase used to increase the current thermostat temperature set point
@@ -69,6 +69,13 @@ action:
             tstat_set: "Thermostat temperature set to {amount} degrees"
             tstat_show: "Showing thermostat"
             tstat_display_error: "Sorry.  This device cannot display the thermostat"
+        uk:
+          responses:
+            tstat_raise: "Температура термостата підвищена на {amount} градус"
+            tstat_lower: "Температура термостата знижена на {amount} градус"
+            tstat_set: "Температура термостата встановлена на {amount} градусів"
+            tstat_show: "Показую термостата"
+            tstat_display_error: "Вибачте. Цей пристрій не може відображати термостат"
   - action: view_assist.set_state
     target:
       entity_id: "{{ target_satellite_device }}"

@@ -10,7 +10,7 @@ blueprint:
       default: en
       selector:
         language:
-          languages: [de, en]
+          languages: [de, en, uk]
     repeat_command:
       name: Repeat Command
       description: The phrase you want to use to trigger repeating last spoken response
@@ -112,6 +112,14 @@ action:
           mode_success: "Setze Modus auf {mode}"
           mode_failure_device: "Entschuldige. aber {mode} ist kein gültiger Modus für dieses Gerät"
           mode_failure_unrecognized: "Entschuldige, aber {mode} ist kein gültiger Modus. Bitte versuche es mit {{ modes }}."
+      uk:
+        responses:
+          repeat: "Я сказав {last_said}"
+          repeat_remove: "Я сказав"
+          do_not_disturb_off: "Режим 'Не турбувати' вимкнено"
+          mode_success: "Встановлення режиму на {mode}"
+          mode_failure_device: "Вибачте. {mode} не є дійсним режимом для цього пристрою"
+          mode_failure_unrecognized: "Вибачте. {mode} не є дійсним режимом. Будь ласка, спробуйте {{ modes }}."
 - choose:
   - conditions:
     - condition: trigger

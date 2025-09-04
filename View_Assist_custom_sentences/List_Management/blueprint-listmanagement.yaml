@@ -10,7 +10,7 @@ blueprint:
       default: en
       selector:
         language:
-          languages: [en, de, fr, es]
+          languages: [en, de, fr, es, uk]
     command_add1:
       name: Command Text Add 1
       description: First phrase for adding to the list
@@ -134,6 +134,16 @@ action:
             one_item: "Hay 1 elemento pendiente en tu {list_name}. Es {items}"
             multiple_items: "Hay {count} elementos en tu {list_name}. Son {items}"
             multiple_items_limited: "Hay {count} elementos en tu {list_name}. Los primeros {max_items} son: {items}, y más."
+        uk:
+          responses:
+            added: "{item} додано до вашого {list_name}"
+            already_in: "{item} вже є у вашому {list_name}"
+            removed: "{item} видалено з {list_name}"
+            not_in: "{item} немає у {list_name}"
+            empty: "У вашому {list_name} немає невиконаних пунктів"
+            one_item: "У вашому {list_name} є 1 невиконаний пункт. Це {items}"
+            multiple_items: "У вашому {list_name} є {count} пунктів. Вони: {items}"
+            multiple_items_limited: "У вашому {list_name} є {count} пунктів. Перші {max_items}: {items}, і ще."
 
   - choose:
       - conditions:

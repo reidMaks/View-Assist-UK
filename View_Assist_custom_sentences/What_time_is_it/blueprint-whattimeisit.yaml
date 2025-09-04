@@ -11,7 +11,7 @@ blueprint:
       default: en
       selector:
         language:
-          languages: [de, en, es, fr, it, nl]
+          languages: [de, en, es, fr, it, nl, uk]
     command_prompt_time:
       name: Command Prompt Time
       description: The phrase you want to use to trigger the request for time
@@ -129,6 +129,32 @@ action:
             time: "Het is {time}"
             day_of_week: "Vandaag is {day_of_week}"
             date: "Vandaag is {date}"
+        uk:
+          responses:
+            time: "Зараз {time}"
+            day_of_week: "Сьогодні {day_of_week}"
+            date: "Сьогодні {day_of_week}, {date}"
+          weekdays:
+            mon: понеділок
+            tue: вівторок
+            wed: середа
+            thu: четвер
+            fri: п'ятниця
+            sat: субота
+            sun: неділя
+          months:
+            jan: січень
+            feb: лютий
+            mar: березень
+            apr: квітень
+            may: травень
+            jun: червень
+            jul: липень
+            aug: серпень
+            sep: вересень
+            oct: жовтень
+            nov: листопад
+            dec: грудень
   - choose:
       - conditions:
           - condition: trigger
