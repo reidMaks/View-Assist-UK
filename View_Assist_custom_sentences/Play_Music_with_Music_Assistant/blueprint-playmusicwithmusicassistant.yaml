@@ -24,7 +24,7 @@ blueprint:
       default: en
       selector:
         language:
-          languages: [de, en, pt]
+          languages: [de, en, pt, uk]
     play_artist_command:
       name: Play Artist Command
       description: The command to trigger the play artist action
@@ -95,6 +95,15 @@ actions:
             playsong_found: "Tocando {song} por {artist}"
             playsong_not_found: "Desculpe, a música {song} por {artist} não foi encontrada"
             playsong_queue: "Incluindo a música {song} por {artist} na lista"
+        uk:
+          responses:
+            playartist_found: "Відтворення музики {artist}"
+            playartist_not_found: "Вибачте, я не зміг знайти музику {search_artist}"
+            playlist_found: "Відтворення плейлиста {playlist}"
+            playlist_not_found: "Вибачте, плейлист з назвою {search_playlist} не знайдено"
+            playsong_found: "Відтворення {song} від {artist}"
+            playsong_not_found: "Вибачте, {song} від {artist} не знайдено"
+            playsong_queue: "Додавання {song} від {artist} до черги"
 
   - choose:
       - conditions:
