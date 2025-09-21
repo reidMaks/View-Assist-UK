@@ -10,10 +10,81 @@ blueprint:
       selector:
         media:
           accept:
-            - media/*
+            - audio/*
       name: Alarm Sound Path
-      description: The path to the sound file that will sound repeatedly when the timer expires
-      default: "http://192.168.0.25:8123/local/viewassist/alarm1.mp3"
+      description:
+        The path to the sound file that will sound repeatedly when the
+        timer expires
+      # default: http://192.168.0.25:8123/local/viewassist/alarm1.mp3
+
+    sentence_timer:
+      name: Commands to set a timer
+      description: &sentence_desc >
+        Edit the sentences as needed, but keep the trigger IDs and the { } placeholders unchanged.
+      selector: &sentence_selector
+        trigger:
+      default:
+        - trigger: conversation
+          command:
+            - set [a] timer for {when}
+            - set [a] {when} timer
+            - (set|start) [a|an] {name} timer for {when}
+          id: timer
+    sentence_setalarm:
+      name: Commands to set an alarm or reminder
+      description: *sentence_desc
+      selector: *sentence_selector
+      default:
+        - trigger: conversation
+          id: setalarm
+          command:
+            - (remind me | set a reminder) to {reminder} at {time}
+    sentence_alarm:
+      name: Commands to set an alarm or reminder
+      description: *sentence_desc
+      selector: *sentence_selector
+      default:
+        - trigger: conversation
+          id: alarm
+          command:
+            - Set [an] alarm for {when}
+            - remind me to {name} in {when} | set a reminder to {name} in {when} | remind me in {when} to {name}
+    sentence_turnoffalarm:
+      name: Commands to turn off an alarm
+      description: *sentence_desc
+      selector: *sentence_selector
+      default:
+        - trigger: conversation
+          id: turnoffalarm
+          command:
+            - (Turn off | cancel | stop | snooze) alarm
+    sentence_timeremaining:
+      name: Commands to check remaining time on a timer
+      description: *sentence_desc
+      selector: *sentence_selector
+      default:
+        - trigger: conversation
+          id: timeremaining
+          command:
+            - how much time (is) left on my {name} timer
+    sentence_canceltimer:
+      name: Commands to cancel a timer
+      description: *sentence_desc
+      selector: *sentence_selector
+      default:
+        - trigger: conversation
+          id: canceltimer
+          command:
+            - cancel my {name} timer
+    sentence_listtimer:
+      name: Commands to list all timers
+      description: *sentence_desc
+      selector: *sentence_selector
+      default:
+        - trigger: conversation
+          id: listtimer
+          command:
+            - list my timers
     snooze_time:
       name: Snooze Time
       description: The amount of time in minutes to wait after hitting snooze button before sounding alarm again
@@ -33,27 +104,13 @@ blueprint:
       description: The View Assist dashboard view to use for displaying information about timers
       default: "/view-assist/info"      
 trigger:
-  - platform: conversation
-    command:
-      - set [a] timer for {when}
-      - set [a] {when} timer
-      - (set|start) [a|an] {name} timer for {when}      
-    id: timer
-  - platform: conversation
-    command:
-      - (remind me | set a reminder) to {reminder} at {time}
-    id: setalarm
-  - platform: conversation
-    command:
-      - Set [an] alarm for {when}
-      - >-
-        remind me to {name} in {when} | set a reminder to {name} in
-        {when} | remind me in {when} to {name}
-    id: alarm
-  - platform: conversation
-    command:
-      - (Turn off | cancel | stop | snooze) alarm
-    id: turnoffalarm    
+  - triggers: !input sentence_setalarm
+  - triggers: !input sentence_alarm
+  - triggers: !input sentence_timeremaining
+  - triggers: !input sentence_canceltimer
+  - triggers: !input sentence_turnoffalarm
+  - triggers: !input sentence_listtimer
+  - triggers: !input sentence_timer
   - event_type: va_timer_warning
     id: timerwarning
     trigger: event
@@ -62,18 +119,7 @@ trigger:
     id: ringalarm
     trigger: event
     alias: When viewassist event timer expired fires
-  - platform: conversation
-    command:
-      - how much time (is) left on my {name} timer
-    id: timeremaining
-  - platform: conversation
-    command:
-      - cancel my {name} timer
-    id: canceltimer
-  - platform: conversation
-    command:
-      - list my timers
-    id: listtimer
+
   - alias: When SNOOZE button pressed
     event_type: viewassist
     trigger: event
@@ -121,8 +167,8 @@ action:
               time: "{{ time }}"
               name: "{{ name }}"
             response_variable: timer_result
-          - set_conversation_response: >-
-              {{ name }} {{ type }} set for {{ time }}
+          - variables:
+              conversation_response: "{{ name }} {{ type }} set for {{ time }}"
           - if:
             - condition: template
               value_template: "{% if target_satellite_device_type != 'audio_only' %}true{% else %}false{% endif %}"
@@ -172,7 +218,7 @@ action:
               - action: view_assist.sound_alarm
                 data:
                   entity_id: "{{ target_mediaplayer_device }}"
-                  media_file: "{{ alarmsound_path }}"
+                  media_file: "{{ alarmsound_path.media_content_id }}"
       - conditions:
           - condition: trigger
             id:
@@ -191,7 +237,8 @@ action:
           - action: view_assist.cancel_timer
             data:
               timer_id: "{{ display_timer_id }}"
-          - set_conversation_response: ""
+          - variables:
+              conversation_response: ""
       - conditions:
           - condition: trigger
             id:
@@ -231,8 +278,8 @@ action:
                 value_template: >-
                   {% if timer_id != '' %}true{% endif %}
             then:              
-            - set_conversation_response: >-
-                You have {{ time_left }} on your {{ trigger.slots.name }} timer
+            - variables:
+                conversation_response: "You have {{ time_left }} on your {{ trigger.slots.name }} timer"
             - if:
               - condition: template
                 value_template: "{% if target_satellite_device_type != 'audio_only' %}true{% else %}false{% endif %}"
@@ -248,7 +295,8 @@ action:
                     device: "{{ target_satellite_device }}"
                     path: "{{ view }}"  
             else:
-            - set_conversation_response: No timer called {{ trigger.slots.name }} could be found
+            - variables:
+                conversation_response: "No timer called {{ trigger.slots.name }} could be found"
             - if:
               - condition: template
                 value_template: "{% if target_satellite_device_type != 'audio_only' %}true{% else %}false{% endif %}"
@@ -292,7 +340,8 @@ action:
                 value_template: >-
                   {% if timer_id != '' %}true{% endif %}
             then:
-              - set_conversation_response: Your {{ trigger.slots.name }} timer has been canceled
+              - variables:
+                  conversation_response: Your {{ trigger.slots.name }} timer has been canceled
               - action: view_assist.cancel_timer
                 data:
                   timer_id: "{{ timer_id }}"
@@ -315,11 +364,9 @@ action:
                       device: "{{ target_satellite_device }}"
                       path: "{{ info }}"                                                         
             else:
-              - set_conversation_response: >-
-                  I could not find an active timer called {{ trigger.slots.name }}
               - variables:
-                  message: >-
-                    I could not find an active timer called {{ trigger.slots.name }}
+                  conversation_response: I could not find an active timer called {{ trigger.slots.name }}
+                  message: I could not find an active timer called {{ trigger.slots.name }}
               - if:
                   - condition: template
                     value_template: "{% if target_satellite_device_type != 'audio_only' %}true{% else %}false{% endif %}"
@@ -351,17 +398,16 @@ action:
           - variables:
               active_timers: "{{ timer_info['result'] | selectattr('status', '!=', 'expired') | list }}"
               count: "{{ active_timers | length }}"
-          - set_conversation_response: >
-              {% set active_timers = timer_info['result'] | selectattr('status', '!=', 'expired') | list %}
-              {% set count = active_timers | length %}
-              {% if count == 0 %}
-              There are no active timers.
-              {% else %}
-              There {% if count == 1 %}is one active {{ active_timers[0]['timer_class'] }} called {% else %}are {{ count }} active timers{% endif %}:
-              {% for timer in active_timers %}
-                {{ timer['name'] if timer['name'] else timer['extra_info']['sentence'] }} {{ timer['timer_class'] }} with {{ timer['expiry']['text'] }} remaining,
-              {% endfor %}
-              {% endif %}
+          - variables:
+              conversation_response: >-
+                "{% set active_timers = timer_info['result'] | selectattr('status',
+                '!=', 'expired') | list %} {% set count = active_timers | length %} {% if
+                count == 0 %} There are no active timers. {% else %} There {% if count ==
+                1 %}is one active {{ active_timers[0]['timer_class'] }} called {% else %}are
+                {{ count }} active timers{% endif %}: {% for timer in active_timers %}\n  {{
+                timer['name'] if timer['name'] else timer['extra_info']['sentence'] }} {{
+                timer['timer_class'] }} with {{ timer['expiry']['text'] }} remaining,\n{%
+                endfor %} {% endif %}\n"
           - if:
             - condition: template
               value_template: "{% if target_satellite_device_type != 'audio_only' %}true{% else %}false{% endif %}"
@@ -409,5 +455,7 @@ action:
             data:
               timer_id: "{{ display_timer_id }}"
               time: "{{ new_time }}"
-          - set_conversation_response: ""
+          - variables:
+              conversation_response: ""
+  - set_conversation_response: "{{ conversation_response }}"
 mode: parallel
