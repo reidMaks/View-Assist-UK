@@ -7,6 +7,10 @@ blueprint:
   domain: automation
   input:
     alarmsound_path:
+      selector:
+        media:
+          accept:
+            - media/*
       name: Alarm Sound Path
       description: The path to the sound file that will sound repeatedly when the timer expires
       default: "http://192.168.0.25:8123/local/viewassist/alarm1.mp3"
